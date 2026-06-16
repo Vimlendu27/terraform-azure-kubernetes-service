@@ -1,0 +1,39 @@
+trigger: 
+ branches:
+   include:
+     - main
+pool: agent
+stages:
+  - stage: init
+    jobs:
+      - job: tfsec
+        displayName: tfsec
+        steps:
+        - task: tfsec@1
+          inputs:
+            version: 'v1.26.0'
+        - task: TerraformInstaller@1
+          inputs:
+            terraformVersion: 'latest'
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/envirment/dev'
+            backendServiceArm: 'project-connection'
+            backendAzureRmResourceGroupName: 'newrg'
+            backendAzureRmStorageAccountName: 'sthdhondu'
+            backendAzureRmContainerName: 'stgcont'
+            backendAzureRmKey: '.tfstates'
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/envirment/dev'
+            environmentServiceNameAzureRM: 'project-connection'
+        - task: TerraformTaskV4@4
+          inputs:
+            provider: 'azurerm'
+            command: 'apply'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/envirment/dev'
+            environmentServiceNameAzureRM: 'project-connection'
